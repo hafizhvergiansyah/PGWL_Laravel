@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\PolylineController;
+use App\Http\Controllers\PolygonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,8 @@ Route::get('/table', [MapController::class, 'table'])->name('table');
 Route::post('/store-point', [PointController::class, 'store'])->name('store-point');
 //create polyline
 Route::post('/store-polyline', [PolylineController::class, 'store'])->name('store-polyline');
+//create polygon
+Route::post('/store-polygon', [PolygonController::class, 'store'])->name('store-polygon');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
