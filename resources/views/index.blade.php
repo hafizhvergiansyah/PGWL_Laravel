@@ -88,7 +88,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="PolygonModalLabel">Create Polyline</h1>
+          <h1 class="modal-title fs-5" id="PolygonModalLabel">Create Polygon</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -150,6 +150,8 @@ var drawControl = new L.Control.Draw({
 
 map.addControl(drawControl);
 
+
+
 map.on('draw:created', function(e) {
 	var type = e.layerType,
 		layer = e.layer;
@@ -175,30 +177,95 @@ map.on('draw:created', function(e) {
 	} else {
 		console.log('undefined');
 	}
-
 	drawnItems.addLayer(layer);
 });
 
-        locations.forEach(location => {
-            L.marker(location.coords).addTo(map)
-                .bindPopup(location.name)
-                .openPopup();
-        });
+/* GeoJSON Point */
+var point = L.geoJson(null, {
+				onEachFeature: function (feature, layer) {
+					var popupContent = "Name " + feature.properties.name + "<br>" +
+						"Description :" + feature.properties.description;
+					layer.on({
+						click: function (e) {
+							point.bindPopup(popupContent);
+						},
+						mouseover: function (e) {
+							point.bindTooltip(feature.properties.kab_kota);
+						},
+					});
+				},
+			});
+			$.getJSON("{{ route('api.points')}}", function (data) {
+				point.addData(data);
+				map.addLayer(point);
+			});
+/* GeoJSON Line */
+var line = L.geoJson(null, {
+				/* Style polyline */
+				style: function (feature) {
+					return {
+						color: "#3388ff",
+						weight: 3,
+						opacity: 1,
+					};
+				},
+				onEachFeature: function (feature, layer) {
+					var popupContent = "Nama jalan :" + feature.properties.name + "<br>" +
+						"Description : " + feature.properties.description + " ";
+					layer.on({
+						click: function (e) {
+							line.bindPopup(popupContent);
+						},
+						mouseover: function (e) {
+							line.bindTooltip(feature.properties.keterangan, {
+								sticky: true,
+							});
+						},
+					});
+				},
+			});
+			$.getJSON("{{ route('api.polylines')}}", function (data) {
+				line.addData(data);
+				map.addLayer(line);
+			});
+        /* GeoJSON Polygon */
+			var polygon = L.geoJson(null, {
+				/* Style polygon */
+				style: function (feature) {
+					return {
+						color: "#3388ff",
+						fillColor: "#3388ff",
+						weight: 2,
+						opacity: 1,
+						fillOpacity: 0.2,
+					};
+				},
+				onEachFeature: function (feature, layer) {
+					var popupContent = "Kecamatan: " + feature.properties.name + "<br>" +
+						"Description: " + feature.properties.description;
+					layer.on({
+						click: function (e) {
+							polygon.bindPopup(popupContent);
+						},
+						mouseover: function (e) {
+							polygon.bindTooltip(feature.properties.kecamatan, {
+								sticky: true,
+							});
+						},
+					});
+				},
+			});
+			$.getJSON("{{ route('api.polygons')}}", function (data) {
+				polygon.addData(data);
+				map.addLayer(polygon);
+			});
+    // layer control
+var overlayMaps = {
+    "Point": point,
+    "Polyline": line,
+    "Polygon": polygon
+};
 
-        // Add control to zoom to UGM layer
-        L.Control.zoomToUGM = L.Control.extend({
-            onAdd: function(map) {
-                var button = L.DomUtil.create('button');
-                button.innerHTML = 'Zoom to UGM';
-                button.onclick = function() {
-                    map.setView([-7.7713, 110.3770], 13); // Coordinates for UGM
-                };
-                return button;
-            }
-        });
-
-        L.control.zoomToUGM({
-            position: 'topright'
-        }).addTo(map);
-    </script>
+var layerControl = L.control.layers(null, overlayMaps).addTo(map);
+</script>
 @endsection

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Points;
 use Illuminate\Http\Request;
+use App\Models\Points;
 
 class PointController extends Controller
 {
@@ -16,7 +16,25 @@ class PointController extends Controller
      */
     public function index()
     {
-        //
+        $points = $this->point->points();
+
+        foreach ($points as $p) {
+            $feature[] = [
+                'type' => 'Feature',
+                'geometry' => json_decode($p->geom),
+                'properties' => [
+                    'name' => $p->name,
+                    'description' => $p->description,
+                    'created_at' => $p->created_at,
+                    'updated_at' => $p->updated_at
+                ]
+                ];
+        }
+
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $feature,
+        ]);
     }
 
     /**
@@ -30,33 +48,31 @@ class PointController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) //memasukkan data ke dalam database
+    public function store(Request $request)
     {
-        //validate
+
+        //Validate data
         $request->validate([
-            "name" => "required",
-            "geom" => "required"
+            'name' => 'required',
+            'geom' => 'required'
         ],
         [
-            "name.required" => "Name is required",
-            "geom.required" => "Location is required"
-        ]
-    );
-
+            'name.required' => 'Name is required',
+            'geom.required' => 'Location is required'
+        ]);
         $data = [
-            "name" => $request->name,
-            "description" => $request->description,
-            "geom" => $request->geom
+            'name' => $request->name,
+            'description' => $request->description,
+            'geom' => $request->geom
         ];
 
-        //create point
-        if(!$this->point->create($data)){
-            return redirect()->back()->with("error", "Failed to create point");
-        }
-        ;
+        // Create Point
+    if(!$this->point->create($data)){
+        return redirect()->back()->with('error', 'Failed to create point');
+    }
 
-        //redirect to map
-        return redirect()->back()->with("success", "Point created successfully");
+        //Redirect to map
+        return redirect()->back()->with('success', 'Point created successfully');
     }
 
     /**

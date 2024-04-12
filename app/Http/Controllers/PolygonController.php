@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Polygon;
 use App\Models\Polygons;
 use Illuminate\Http\Request;
 
 class PolygonController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(){
         $this->polygon = new Polygons();
     }
     /**
@@ -17,6 +17,25 @@ class PolygonController extends Controller
     public function index()
     {
         //
+        $polygons = $this->polygon->polygons();
+
+        foreach ($polygons as $p) {
+            $feature[] = [
+                'type' => 'Feature',
+                'geometry' => json_decode($p->geom),
+                'properties' => [
+                    'name' => $p->name,
+                    'description' => $p->description,
+                    'created_at' => $p->created_at,
+                    'updated_at' => $p->updated_at
+                ]
+                ];
+        }
+
+        return response()->json([
+            'type' => 'FeatureCollection',
+            'features' => $feature,
+        ]);
     }
 
     /**
@@ -57,6 +76,7 @@ class PolygonController extends Controller
 
         //redirect to map
         return redirect()->back()->with("success", "Polygon created successfully");
+
     }
 
     /**
