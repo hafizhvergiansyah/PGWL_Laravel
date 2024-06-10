@@ -9,17 +9,20 @@ class MapController extends Controller
     public function index() //(funtion index atau sbg method)
     {
         $data = [
-            "title"=> "Petaku"
+            "title" => "Petaku"
         ];
-
-        return view('index', $data); //Digunakan untuk memanggil view index (file view index.blade.php)
+        if (auth()->check()) {
+            return view('index', $data);
+        } else {
+            return view('index-public', $data); //Digunakan untuk memanggil view index-public (file view index-public.blade.php)
+        }
     }
 
     public function table()
     {
-        $data =[
+        $data = [
             "title" => "Table"
         ];
-        return view ('table', $data);
+        return view('table', $data);
     }
 }
